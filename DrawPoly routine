@@ -1,0 +1,44 @@
+Sub DrawPoly()
+
+'set the path of the dwg file
+Dim mypath As Variant
+mypath = Excel.Application.GetOpenFilename("All Files (*.dwg),*.dwg", , "Select Drawing File")
+If mypath = False Then
+    Err.Raise (1)
+End If
+
+' create an instance to point to Autocad itself
+Dim mycad As AcadApplication
+If mycad Is Nothing Then
+    Set mycad = CreateObject("AutoCad.Application.24") 'AutoCAD 2021
+Else
+    Set mycad = GetObject(, "AutoCad.Application.24")
+End If
+
+'create an instance to point to the file which will be opened
+Dim mydoc As AcadDocument
+Set mydoc = mycad.Documents.Open(mypath)
+
+'create the instance of the lightweight polyline
+Dim lineObj As AcadLWPolyline
+Dim points() As Double, size As Integer, size2 As Integer, i As Integer, s As Integer
+size = WorksheetFunction.CountA(Worksheets(1).Columns(1))
+size2 = size * 2
+
+ReDim points(size2 - 1)
+s = 0 'stepper for debugging puprose
+For i = 0 To size - 1
+  With Sheet1
+    s = 2 * (i + 1) - 2
+    points(s) = .Range(.Cells(i + 1, 2), .Cells(i + 1, 2)) 'X coordinate
+    points(s + 1) = .Range(.Cells(i + 1, 1), .Cells(i + 1, 1)) 'Y cordinate
+  End With
+Next i
+MsgBox "Done 0"
+'Draw the polyline
+Set lineObj = mydoc.ModelSpace.AddLightWeightPolyline(points)
+mydoc.Close
+mycad.Quit
+MsgBox "Done 1"
+
+End Sub
